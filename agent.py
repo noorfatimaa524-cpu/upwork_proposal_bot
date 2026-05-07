@@ -13,8 +13,9 @@ if not api_key:
     st.stop()
 
 # --- 2. LLM SETUP ---
+# Change this line in your agent.py
 llm = ChatGroq(
-    model="llama-3.1-70b-versatile", # This is the old, decommissioned name
+    model="llama-3.3-70b-versatile",  # Update from 3.1 to 3.3
     temperature=0.6,
     api_key=api_key
 )
