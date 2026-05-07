@@ -3,5 +3,6 @@ langchain-openai
 langgraph
 python-dotenv
 openai
-
-
+pyttsx3
+langchain-groq
+streamlit
