@@ -14,7 +14,7 @@ if not api_key:
 
 # --- 2. LLM SETUP ---
 llm = ChatGroq(
-    model="llama-3.1-70b-versatile", # Groq supports Llama models natively
+    model="llama-3.1-70b-versatile", # This is the old, decommissioned name
     temperature=0.6,
     api_key=api_key
 )
