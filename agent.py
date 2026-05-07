@@ -1,119 +1,78 @@
 import os
-from dotenv import load_dotenv
+import streamlit as st
 from gtts import gTTS
+import io
 from langchain_groq import ChatGroq
 
-# LOAD ENV
-load_dotenv()
-api_key = os.getenv("GROQ_API_KEY")
+# --- 1. SECURE API KEY LOADING ---
+# This checks Streamlit Secrets first (Cloud), then falls back to environment variables (Local)
+api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
 
 if not api_key:
-    raise ValueError("GROQ_API_KEY missing")
+    st.error("Missing GROQ_API_KEY! Please add it to your Streamlit Secrets.")
+    st.stop()
 
-# TTS
-engine = pyttsx3.init()
-engine.setProperty('rate', 170)
-
-def speak(text):
-    print("\nAI:\n", text)
-    engine.say(text)
-    engine.runAndWait()
-
-# LLM
+# --- 2. LLM SETUP ---
 llm = ChatGroq(
-    model="openai/gpt-oss-120b",
+    model="llama-3.1-70b-versatile", # Groq supports Llama models natively
     temperature=0.6,
     api_key=api_key
 )
 
-# JOB TYPE DETECTOR
+# --- 3. HELPER FUNCTIONS ---
 def detect_job_type(text):
     text = text.lower()
-
     if any(word in text for word in ["ai", "chatbot", "machine learning", "automation", "langchain"]):
         return "ai"
-
     elif any(word in text for word in ["website", "react", "frontend", "backend", "api"]):
         return "web"
-
     else:
         return "general"
 
-# PROMPT GENERATORS
 def generate_prompt(job, job_type):
-    
     if job_type == "ai":
-        return f"""
-Write a professional AI project proposal.
-
-Job:
-{job}
-
-Include:
-- Understanding of AI problem
-- Technical solution (models, APIs, tools)
-- Timeline
-- Strong CTA
-
-Tone: Expert, confident
-"""
-
+        return f"Write a professional AI project proposal.\n\nJob:\n{job}\n\nInclude: Technical solution, timeline, and CTA."
     elif job_type == "web":
-        return f"""
-Write a web development proposal.
-
-Job:
-{job}
-
-Include:
-- Understanding of website/app needs
-- Tech stack (React, Node, etc.)
-- Clean delivery plan
-- CTA
-Tone: Professional and clear
-"""
-
+        return f"Write a web development proposal.\n\nJob:\n{job}\n\nInclude: Tech stack and delivery plan."
     else:
-        return f"""
-Write a freelance proposal.
+        return f"Write a freelance proposal under 200 words for:\n{job}"
 
-Job:
-{job}
+# --- 4. STREAMLIT UI ---
+st.set_page_config(page_title="AI Proposal Agent", page_icon="🤖")
+st.title("🤖 AI Proposal Generator")
 
-- Start with strong hook
-- Show understanding
-- Offer solution
-- Keep under 200 words
-- Add CTA
-"""
+job_description = st.text_area("Paste Job Description Here:", height=200)
 
-# SAVE FILE
-def save_proposal(text):
-    with open("proposal.csv", "w", encoding="utf-8") as f:
-        f.write(text)
-    print("Saved to proposal.csv")
-
-# MAIN LOOP
-speak("Welcome to the AI proposal Agent!")
-print("AI Proposal Agent Started")
-print("Paste job description or type 'exit'\n")
-
-while True:
-    job = input("Job Description:\n")
-    if job.lower() == "exit":
-        speak("Goodbye! Agent shutting down.")
-        break
-
-    job_type = detect_job_type(job)
-    print(f"Detected: {job_type.upper()} job")
-    prompt = generate_prompt(job, job_type)
-    try:
-        response = llm.invoke(prompt).content
-        print(response)
-        save_proposal(response)
-    except Exception as e:
-        print("Error:", e)
+if st.button("Generate Proposal"):
+    if job_description:
+        job_type = detect_job_type(job_description)
+        st.info(f"Detected Category: {job_type.upper()}")
         
-        
-        
+        with st.spinner("Generating..."):
+            try:
+                prompt = generate_prompt(job_description, job_type)
+                response = llm.invoke(prompt).content
+                
+                st.success("Proposal Ready!")
+                st.markdown("---")
+                st.write(response)
+                
+                # --- 5. AUDIO OUTPUT (gTTS) ---
+                tts = gTTS(text=response, lang='en')
+                audio_fp = io.BytesIO()
+                tts.write_to_fp(audio_fp)
+                st.audio(audio_fp, format='audio/mp3')
+                
+                # --- 6. DOWNLOAD OPTION ---
+                st.download_button(
+                    label="Download Proposal",
+                    data=response,
+                    file_name="proposal.txt",
+                    mime="text/plain"
+                )
+                
+            except Exception as e:
+                st.error(f"LLM Error: {e}")
+    else:
+        st.warning("Please paste a job description first.")
         
