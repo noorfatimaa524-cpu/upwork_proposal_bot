@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-import pyttsx3
+from gtts import gTTS
 from langchain_groq import ChatGroq
 
 # LOAD ENV
