@@ -1,0 +1,18 @@
+################
+Job Title
+################
+
+AI Full-Stack Developer Needed Urgently ( Fix Critical Bug in AI SaaS Platform )
+
+
+################
+Job Description
+################
+
+We’re looking for a skilled AI Full-Stack Developer to help us quickly resolve a critical bug in our AI SaaS platform. The issue is affecting core functionality, so we need someone who can jump in, understand the system fast, and deliver a reliable fix without disrupting the existing architecture.
+Our stack includes modern frontend and backend technologies, along with AI integrations. You should be comfortable debugging across the full stack, working with APIs, and handling AI-related workflows. Experience with SaaS platforms and production-level systems is important.
+This is a high-priority task, so responsiveness and clear communication matter. If things go well, there’s strong potential for ongoing work.
+
+
+
+
